@@ -172,7 +172,7 @@ if uploaded_file:
             df_upload['Risk_Probability'] = probs
             df_upload['Risk_Level'] = np.where(probs >= 0.65, "High (Immediate Test)", 
                                       np.where(probs >= 0.30, "Warning (Pre-diabetes)", "Low"))
-         
+            
             st.success("Prediction completed!")
             st.dataframe(df_upload)
             
