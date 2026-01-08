@@ -133,12 +133,51 @@ if submit_btn:
         st.error(f"An error occurred: {e}")
 
 # =========================================================
-# 3. OPTION 2: UPLOAD FILE
+# 3. OPTION 2: UPLOAD FILE (WITH TEMPLATE)
 # =========================================================
 st.header("Option 2: Upload Excel / CSV")
-st.info(f"Required columns: {', '.join(FEATURES)}")
 
-uploaded_file = st.file_uploader("Upload file", type=["xlsx", "csv"])
+# --- A. TẠO FILE MẪU (TEMPLATE) ---
+st.markdown("#### Step 1: Download Template")
+st.write("Please download this file, fill in your data, and upload it back.")
+
+# Tạo dữ liệu mẫu (2 dòng ví dụ)
+example_data = {
+    'Age': [45, 60],
+    'Gender': [1, 0], # 1: Male, 0: Female
+    'BMI': [24.5, 31.2],
+    'Waist_Circumference': [85.0, 102.0],
+    'Systolic_BP': [120, 145],
+    'Diastolic_BP': [80, 90],
+    'Family_History_Diabetes': [0, 1], # 1: Yes, 0: No
+    'History_Hypertension': [0, 1],
+    'History_Dyslipidemia': [0, 1],
+    'Physical_Activity': [1, 0],
+    'Education_Level': [4, 2], # 1-5 scale
+    'Race_Ethnicity': [3, 4]   # 1: Mex, 2: Hisp, 3: White, 4: Black, 6: Asian, 7: Other
+}
+
+# Chuyển thành DataFrame và CSV
+df_template = pd.DataFrame(example_data)
+# Đảm bảo đúng thứ tự cột như Model yêu cầu
+df_template = df_template[FEATURES] 
+
+csv_template = df_template.to_csv(index=False).encode('utf-8')
+
+# Nút tải xuống
+st.download_button(
+    label="⬇️ Download Template CSV",
+    data=csv_template,
+    file_name="diabetes_data_template.csv",
+    mime="text/csv",
+    help="Click to download a sample CSV file with correct column headers."
+)
+
+st.markdown("---")
+
+# --- B. UPLOAD VÀ DỰ ĐOÁN ---
+st.markdown("#### Step 2: Upload Your File")
+uploaded_file = st.file_uploader("Upload filled template", type=["xlsx", "csv"])
 
 if uploaded_file:
     if uploaded_file.name.endswith(".csv"):
@@ -151,27 +190,26 @@ if uploaded_file:
     
     if st.button("📊 Predict from File"):
         try:
-            # Prepare data
+            # Lọc lấy đúng cột
             df_predict = df_upload[FEATURES]
             
-            # Predict
+            # Scale & Predict
             X_scaled_up = scaler.transform(df_predict)
             probs = model.predict_proba(X_scaled_up)[:,1]
             
-            # Add results
+            # Gán kết quả
             df_upload['Risk_Probability'] = probs
-            df_upload['Risk_Level'] = np.where(probs >= 0.65, "High", 
-                                      np.where(probs >= 0.30, "Medium", "Low"))
+            df_upload['Risk_Level'] = np.where(probs >= 0.65, "High (Immediate Test)", 
+                                      np.where(probs >= 0.30, "Warning (Pre-diabetes)", "Low"))
             
             st.success("Prediction completed!")
             st.dataframe(df_upload)
             
-            # Download
             csv = df_upload.to_csv(index=False).encode('utf-8')
             st.download_button("⬇️ Download Result CSV", csv, "results.csv", "text/csv")
             
         except KeyError as e:
-            st.error(f"❌ Missing columns! The model requires: {FEATURES}")
-            st.error(f"Missing: {e}")
+            st.error(f"❌ Column mismatch! Please use the Template above.")
+            st.error(f"Missing columns: {e}")
         except Exception as e:
             st.error(f"Error: {e}")
