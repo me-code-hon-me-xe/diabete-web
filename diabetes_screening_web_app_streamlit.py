@@ -111,12 +111,21 @@ if submit_btn:
         st.metric("Diabetes Risk Probability", f"{prob*100:.2f}%")
         st.progress(prob)
         
-        if prob >= 0.65:
-            st.error("⚠️ VERY HIGH RISK – Immediate medical testing recommended.")
-        elif prob >= 0.30:
-            st.warning("🟡 MODERATE RISK – Lifestyle intervention advised.")
+        
+        if prob >= HIGH_RISK_THRESHOLD:
+            # Thay print bằng st.error và st.markdown
+            st.error(f"⚠️ VERY HIGH RISK ({prob:.1%})")
+            st.markdown("**👉 Action:** Immediate HbA1c and fasting glucose tests are recommended.")
+            
+        elif prob >= WARNING_THRESHOLD:
+            # Thay print bằng st.warning
+            st.warning(f"🟡 WARNING SIGNS ({prob:.1%})")
+            st.markdown("**👉 Action:** Pre-diabetes risk. Reduce sugar/carbohydrates and increase physical activity.")
+            
         else:
-            st.success("✅ LOW RISK – Maintain healthy lifestyle.")
+            # Thay print bằng st.success
+            st.success(f"✅ LOW RISK ({prob:.1%})")
+            st.markdown("**👉 Action:** Maintain current lifestyle. Re-evaluate in 6 months.")
             
     except KeyError as e:
         st.error(f"❌ Key Error: The model expects feature '{e}'. Please check your English feature names.")
