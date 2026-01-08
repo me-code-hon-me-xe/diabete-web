@@ -9,21 +9,20 @@ import os
 # =========================================================
 st.set_page_config(page_title="Diabetes Screening Tool", layout="centered")
 
-# Vì bạn lấy từ GIT về, file sẽ nằm ngay thư mục hiện tại
-# (Không cần đường dẫn /content/drive/... nữa)
+# Đường dẫn file (nằm cùng thư mục code)
 MODEL_PATH = "diabetes_logreg_model_08012026.pkl"
 SCALER_PATH = "diabetes_logreg_scaler_08012026.pkl"
 
-# Hàm load model an toàn
 @st.cache_resource
 def load_prediction_model():
     if not os.path.exists(MODEL_PATH):
-        st.error(f"❌ File not found: {MODEL_PATH}. Make sure you pulled from Git.")
+        st.error(f"❌ File not found: {MODEL_PATH}")
         return None, None, None
     
     model = joblib.load(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
-    features = list(model.feature_names_in_) # Lấy tên cột gốc (VD: Tuoi, Gioi_Tinh...)
+    # Lấy tên cột gốc (Tiếng Việt) từ model: ['Tuoi', 'Gioi_Tinh', ...]
+    features = list(model.feature_names_in_) 
     return model, scaler, features
 
 model, scaler, FEATURES = load_prediction_model()
@@ -40,8 +39,7 @@ st.write("Enter patient data manually **or** upload an Excel/CSV file.")
 st.header("Option 1: Manual Input")
 
 with st.form("manual_form"):
-    # Dictionary để lưu dữ liệu (Key phải khớp với tên cột lúc train model)
-    # Chúng ta dùng biến tạm để nhập, sau đó gán vào dict này
+    # QUAN TRỌNG: Dùng Key Tiếng Việt để khớp với Model
     data = {}
     
     col1, col2 = st.columns(2)
@@ -51,7 +49,6 @@ with st.form("manual_form"):
         data['Tuoi'] = st.number_input("Age (years)", 1, 120, 40)
         
         # Gender -> Gioi_Tinh
-        # Sửa lỗi selectbox: Dùng list options, sau đó map thủ công
         g_display = st.selectbox("Gender", ["Male", "Female"])
         data['Gioi_Tinh'] = 1 if g_display == "Male" else 0
         
@@ -97,27 +94,31 @@ with st.form("manual_form"):
     submit_btn = st.form_submit_button("🔍 Predict Risk")
 
 if submit_btn:
-    # Tạo DataFrame đúng chuẩn model yêu cầu
-    df_input = pd.DataFrame([data])
-    
-    # Đảm bảo đúng thứ tự cột
-    df_input = df_input[FEATURES]
-    
-    # Scale & Predict
-    X_scaled = scaler.transform(df_input)
-    prob = model.predict_proba(X_scaled)[0][1]
-    
-    st.divider()
-    st.subheader("📊 Result")
-    st.metric("Diabetes Risk Probability", f"{prob*100:.2f}%")
-    st.progress(prob)
-    
-    if prob >= 0.65:
-        st.error("⚠️ VERY HIGH RISK – Immediate medical testing recommended")
-    elif prob >= 0.30:
-        st.warning("🟡 MODERATE RISK – Lifestyle intervention advised")
-    else:
-        st.success("✅ LOW RISK – Maintain healthy lifestyle")
+    try:
+        # Tạo DataFrame
+        df_input = pd.DataFrame([data])
+        
+        # Sắp xếp đúng thứ tự cột (Bây giờ đã khớp vì data dùng key Tiếng Việt)
+        df_input = df_input[FEATURES]
+        
+        # Scale & Predict
+        X_scaled = scaler.transform(df_input)
+        prob = model.predict_proba(X_scaled)[0][1]
+        
+        st.divider()
+        st.subheader("📊 Result")
+        st.metric("Diabetes Risk Probability", f"{prob*100:.2f}%")
+        st.progress(prob)
+        
+        if prob >= 0.65:
+            st.error("⚠️ VERY HIGH RISK – Immediate medical testing recommended")
+        elif prob >= 0.30:
+            st.warning("🟡 MODERATE RISK – Lifestyle intervention advised")
+        else:
+            st.success("✅ LOW RISK – Maintain healthy lifestyle")
+            
+    except Exception as e:
+        st.error(f"Error during prediction: {e}")
 
 # =========================================================
 # 3. OPTION 2: UPLOAD FILE
@@ -137,19 +138,19 @@ if uploaded_file:
     
     if st.button("📊 Predict from File"):
         try:
-            # Lưu ý: File upload phải có tiêu đề cột là Tiếng Việt (Tuoi, Vong_Eo...)
-            # để khớp với model cũ. Nếu file là tiếng Anh, ta cần đổi tên cột.
-            
-            # Mapping tên cột tiếng Anh sang tiếng Việt (đề phòng file upload dùng tiếng Anh)
-            # Nếu file đã là tiếng Việt thì dòng này không ảnh hưởng
+            # Tự động đổi tên cột Tiếng Anh sang Tiếng Việt (nếu file upload dùng tiếng Anh)
             rename_map = {
                 'Age': 'Tuoi', 'Gender': 'Gioi_Tinh', 'BMI': 'Chi_So_BMI',
-                'Waist_Circumference': 'Vong_Eo', 'Systolic_BP': 'HA_Tam_Thu',
-                'Diastolic_BP': 'HA_Tam_Truong', 'Family_History': 'Di_Truyen_Gia_Dinh',
-                'Hypertension_History': 'Tien_Su_Cao_HA', 'Dyslipidemia_History': 'Tien_Su_Mo_Mau',
-                'Physical_Activity': 'Van_Dong_The_Chat', 'Education': 'Trinh_Do_Hoc_Van',
-                'Race': 'Sac_Toc'
+                'Waist_Circumference': 'Vong_Eo', 'Waist': 'Vong_Eo',
+                'Systolic_BP': 'HA_Tam_Thu', 'Diastolic_BP': 'HA_Tam_Truong', 
+                'Family_History': 'Di_Truyen_Gia_Dinh', 'Family_History_Diabetes': 'Di_Truyen_Gia_Dinh',
+                'History_Hypertension': 'Tien_Su_Cao_HA', 'Hypertension_History': 'Tien_Su_Cao_HA',
+                'History_Dyslipidemia': 'Tien_Su_Mo_Mau', 'Dyslipidemia_History': 'Tien_Su_Mo_Mau',
+                'Physical_Activity': 'Van_Dong_The_Chat', 
+                'Education_Level': 'Trinh_Do_Hoc_Van', 'Education': 'Trinh_Do_Hoc_Van',
+                'Race_Ethnicity': 'Sac_Toc', 'Race': 'Sac_Toc'
             }
+            # Đổi tên cột (nếu khớp)
             df_upload.rename(columns=rename_map, inplace=True)
             
             # Lọc cột và dự đoán
@@ -169,5 +170,5 @@ if uploaded_file:
             st.download_button("⬇️ Download Result CSV", csv, "results.csv", "text/csv")
             
         except KeyError as e:
-            st.error(f"❌ Column mismatch! The model expects these columns: {FEATURES}")
-            st.error(f"Missing: {e}")
+            st.error(f"❌ Column mismatch! The model expects Vietnamese columns: {FEATURES}")
+            st.error(f"Missing columns: {e}")
