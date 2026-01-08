@@ -169,7 +169,7 @@ if uploaded_file:
             X_scaled_up = scaler.transform(df_predict)
             probs = model.predict_proba(X_scaled_up)[:,1]
             
-            df_upload['Risk_Probability'] = probs*100%
+            df_upload['Risk_Probability'] = probs
             df_upload['Risk_Level'] = np.where(probs >= 0.65, "High (Immediate Test)", 
                                       np.where(probs >= 0.30, "Warning (Pre-diabetes)", "Low"))
          
