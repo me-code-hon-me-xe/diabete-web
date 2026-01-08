@@ -162,7 +162,7 @@ df_template = pd.DataFrame(example_data)
 # Đảm bảo đúng thứ tự cột như Model yêu cầu
 df_template = df_template[FEATURES] 
 
-csv_template = df_template.to_csv(index=False).encode('utf-8')
+csv_template = df_template.to_csv(index=False).encode('utf-8-sig')
 
 # Nút tải xuống
 st.download_button(
