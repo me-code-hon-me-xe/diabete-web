@@ -112,12 +112,12 @@ if submit_btn:
         st.progress(prob)
         
         
-        if prob >= HIGH_RISK_THRESHOLD:
+        if prob >= 0.65:
             # Thay print bằng st.error và st.markdown
             st.error(f"⚠️ VERY HIGH RISK ({prob:.1%})")
             st.markdown("**👉 Action:** Immediate HbA1c and fasting glucose tests are recommended.")
             
-        elif prob >= WARNING_THRESHOLD:
+        elif prob >= 0.30:
             # Thay print bằng st.warning
             st.warning(f"🟡 WARNING SIGNS ({prob:.1%})")
             st.markdown("**👉 Action:** Pre-diabetes risk. Reduce sugar/carbohydrates and increase physical activity.")
