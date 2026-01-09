@@ -119,18 +119,18 @@ st.markdown("#### Step 1: Download Excel Template")
 st.write("Please download this template, fill in data, and upload it back.")
 
 example_data = {
-    'Age':                     [25, 30, 45, 50, 60, 65, 70, 40, 55, 35],
-    'Gender':                  [0,  1,  1,  0,  1,  0,  1,  0,  1,  0], # 1=Male, 0=Female
-    'BMI':                     [22.5, 24.0, 28.5, 31.2, 33.5, 29.0, 26.5, 35.1, 27.8, 21.0],
-    'Waist_Circumference':     [75.0, 82.0, 95.0, 102.0, 108.0, 98.0, 92.0, 110.0, 96.0, 70.0],
-    'Systolic_BP':             [110, 115, 128, 145, 150, 138, 130, 160, 125, 112],
-    'Diastolic_BP':            [70, 75, 82, 90, 95, 85, 80, 100, 78, 72],
-    'Family_History_Diabetes': [0, 0, 1, 1, 1, 1, 0, 1, 0, 0],
-    'History_Hypertension':    [0, 0, 0, 1, 1, 1, 0, 1, 0, 0],
-    'History_Dyslipidemia':    [0, 0, 1, 1, 1, 1, 0, 1, 0, 0],
-    'Physical_Activity':       [1, 1, 0, 0, 0, 0, 1, 0, 1, 1], # 1=Yes, 0=No
-    'Education_Level':         [5, 4, 3, 2, 3, 2, 4, 3, 5, 4], # 1-5 Scale
-    'Race_Ethnicity':          [3, 3, 4, 1, 6, 7, 3, 4, 3, 6]  # 1=Mex, 3=White, 4=Black, etc.
+    'Age':                     [25, 30, 45, 50, 60, 65, 70, 40, 55, 35, 24],
+    'Gender':                  [0,  1,  1,  0,  1,  0,  1,  0,  1,  0,  1], 
+    'BMI':                     [22.5, 24.0, 28.5, 31.2, 33.5, 29.0, 26.5, 35.1, 27.8, 21.0, 34.5], # High BMI
+    'Waist_Circumference':     [75.0, 82.0, 95.0, 102.0, 108.0, 98.0, 92.0, 110.0, 96.0, 70.0, 105.0], # High Waist
+    'Systolic_BP':             [110, 115, 128, 145, 150, 138, 130, 160, 125, 112, 138], # Stage 1 HTN
+    'Diastolic_BP':            [70, 75, 82, 90, 95, 85, 80, 100, 78, 72, 88],
+    'Family_History_Diabetes': [0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0], # No family history (Lifestyle only)
+    'History_Hypertension':    [0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1], # Already has history
+    'History_Dyslipidemia':    [0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0],
+    'Physical_Activity':       [1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0], # No activity
+    'Education_Level':         [5, 4, 3, 2, 3, 2, 4, 3, 5, 4, 3], 
+    'Race_Ethnicity':          [3, 3, 4, 1, 6, 7, 3, 4, 3, 6, 3]  
 }
 
 df_template = pd.DataFrame(example_data)
