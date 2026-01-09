@@ -94,7 +94,7 @@ if submit_btn:
         
         st.divider()
         st.subheader("📊 Result Analysis")
-        st.progress(prob)
+        st.progress(float(prob))
         st.metric("Risk Score", f"{prob*100:.2f}%")
         
         HIGH_RISK_THRESHOLD = 0.65
